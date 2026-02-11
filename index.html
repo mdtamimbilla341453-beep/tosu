@@ -1,0 +1,2042 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>ExamZen - Student Assistant v2.0</title>
+    <!-- Version 2.0 - All Features Working -->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #0a0a0a;
+            color: #e0e0e0;
+            line-height: 1.6;
+        }
+
+        .app-container {
+            display: flex;
+            min-height: 100vh;
+            width: 100%;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 70px;
+            background: #1a1a1a;
+            border-right: 1px solid #2a2a2a;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px 0;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            left: 0;
+            top: 0;
+        }
+
+        .logo {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, #60a5fa 0%, #3b82f6 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-bottom: 40px;
+            cursor: pointer;
+        }
+
+        .nav-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-icon:hover {
+            background: #2a2a2a;
+        }
+
+        .nav-icon.active {
+            background: #2563eb;
+            box-shadow: 0 0 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .nav-icon.active::before {
+            content: '';
+            position: absolute;
+            left: -5px;
+            width: 3px;
+            height: 20px;
+            background: #60a5fa;
+            border-radius: 0 2px 2px 0;
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: 70px;
+            background: #0a0a0a;
+            width: calc(100% - 70px);
+        }
+
+        .topbar {
+            height: 60px;
+            background: #0a0a0a;
+            border-bottom: 1px solid #2a2a2a;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+        }
+
+        .topbar h1 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+
+        /* Content Area */
+        .content {
+            padding: 40px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.4s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Page Header */
+        .page-header {
+            margin-bottom: 30px;
+        }
+
+        .page-header h2 {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f0f0f0;
+            margin-bottom: 8px;
+        }
+
+        .page-header p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .subject-select {
+            padding: 10px 18px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 10px;
+            color: #e0e0e0;
+            font-size: 14px;
+            cursor: pointer;
+            outline: none;
+            min-width: 180px;
+        }
+
+        .subject-select:focus {
+            border-color: #2563eb;
+        }
+
+        /* Daily Suggestion Card */
+        .suggestion-card {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .suggestion-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.1) 0%, transparent 70%);
+        }
+
+        .suggestion-card .icon {
+            font-size: 24px;
+            margin-bottom: 10px;
+        }
+
+        .suggestion-card h3 {
+            font-size: 16px;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+
+        .suggestion-card .suggestion-text {
+            font-size: 20px;
+            color: #f1f5f9;
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .ai-loading {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 15px;
+        }
+
+        .ai-loading .spinner {
+            width: 16px;
+            height: 16px;
+            border: 2px solid #334155;
+            border-top-color: #60a5fa;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Grid Layout */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 25px;
+            margin-bottom: 25px;
+        }
+
+        /* Card */
+        .card {
+            background: #141414;
+            border: 1px solid #2a2a2a;
+            border-radius: 16px;
+            padding: 25px;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .card-header .icon {
+            font-size: 20px;
+        }
+
+        .card-header h3 {
+            font-size: 18px;
+            font-weight: 600;
+            color: #f0f0f0;
+        }
+
+        /* Chart Container */
+        .chart-container {
+            margin-top: 20px;
+        }
+
+        .chart-bar {
+            margin-bottom: 18px;
+        }
+
+        .chart-bar-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+
+        .chart-bar-label .name {
+            color: #e0e0e0;
+        }
+
+        .chart-bar-label .value {
+            color: #60a5fa;
+            font-weight: 600;
+        }
+
+        .chart-bar-track {
+            height: 8px;
+            background: #1a1a1a;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .chart-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #60a5fa 0%, #3b82f6 100%);
+            border-radius: 10px;
+            transition: width 1s ease;
+        }
+
+        .chart-bar-fill.highlight {
+            background: linear-gradient(90deg, #34d399 0%, #10b981 100%);
+        }
+
+        /* Table */
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        .data-table thead {
+            border-bottom: 1px solid #2a2a2a;
+        }
+
+        .data-table th {
+            text-align: left;
+            padding: 12px 15px;
+            font-size: 12px;
+            font-weight: 600;
+            color: #888;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-table td {
+            padding: 15px;
+            border-bottom: 1px solid #1a1a1a;
+            font-size: 14px;
+            color: #e0e0e0;
+        }
+
+        .data-table tbody tr:hover {
+            background: #1a1a1a;
+        }
+
+        .priority-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-right: 8px;
+        }
+
+        .priority-high {
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+        }
+
+        .priority-medium {
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+        }
+
+        .priority-low {
+            background: rgba(156, 163, 175, 0.15);
+            color: #9ca3af;
+        }
+
+        .year-badge {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* Notes Section */
+        .note-title-input {
+            width: 100%;
+            padding: 12px 15px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 16px;
+            font-weight: 600;
+            font-family: inherit;
+            outline: none;
+            transition: border-color 0.3s ease;
+            margin-bottom: 15px;
+        }
+
+        .note-title-input:focus {
+            border-color: #2563eb;
+        }
+
+        .notes-textarea {
+            width: 100%;
+            min-height: 150px;
+            padding: 15px;
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 14px;
+            font-family: inherit;
+            resize: vertical;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        .notes-textarea:focus {
+            border-color: #2563eb;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            background: #2563eb;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-secondary {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            color: #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #2a2a2a;
+            box-shadow: none;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        /* File Upload */
+        .file-upload-area {
+            border: 2px dashed #2a2a2a;
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 20px;
+        }
+
+        .file-upload-area:hover {
+            border-color: #2563eb;
+            background: rgba(37, 99, 235, 0.05);
+        }
+
+        .file-upload-area input {
+            display: none;
+        }
+
+        .file-upload-area .icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .file-upload-area p {
+            color: #888;
+            font-size: 14px;
+        }
+
+        .preview-image {
+            max-width: 100%;
+            border-radius: 12px;
+            margin-top: 15px;
+            border: 1px solid #2a2a2a;
+        }
+
+        /* Notes List */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .note-item {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-left: 3px solid #2563eb;
+            border-radius: 10px;
+            padding: 18px;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .note-item:hover {
+            background: #1f1f1f;
+            border-left-color: #60a5fa;
+        }
+
+        .note-item:hover .note-actions {
+            opacity: 1;
+        }
+
+        .note-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .edit-note-btn,
+        .delete-note-btn {
+            background: #2a2a2a;
+            color: #e0e0e0;
+            border: 1px solid #3a3a3a;
+            border-radius: 8px;
+            padding: 6px 12px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+        }
+
+        .edit-note-btn {
+            background: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .edit-note-btn:hover {
+            background: #1d4ed8;
+            transform: scale(1.05);
+        }
+
+        .delete-note-btn {
+            background: #ef4444;
+            color: white;
+            border-color: #ef4444;
+        }
+
+        .delete-note-btn:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .note-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .note-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #f0f0f0;
+            margin-bottom: 8px;
+        }
+
+        .note-date {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .note-content {
+            color: #e0e0e0;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Revision Card */
+        .revision-display {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 2px dashed #334155;
+            border-radius: 16px;
+            padding: 40px;
+            text-align: center;
+            min-height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s ease;
+            margin-top: 20px;
+        }
+
+        .revision-display.active {
+            border-color: #2563eb;
+            border-style: solid;
+            background: linear-gradient(135deg, #1e3a8a 0%, #1e293b 100%);
+        }
+
+        .revision-display .placeholder {
+            font-size: 16px;
+            color: #64748b;
+        }
+
+        .revision-display .content {
+            text-align: left;
+            width: 100%;
+        }
+
+        /* Tips Section */
+        .tip-card {
+            background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
+            border: 1px solid #2a2a2a;
+            border-left: 4px solid #34d399;
+            border-radius: 12px;
+            padding: 25px;
+            margin-top: 20px;
+        }
+
+        .tip-card .icon {
+            font-size: 32px;
+            margin-bottom: 15px;
+        }
+
+        .tip-card p {
+            color: #e0e0e0;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .tips-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .tip-item {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .tip-item:hover {
+            border-color: #34d399;
+            transform: translateY(-2px);
+        }
+
+        .tip-item .number {
+            display: inline-block;
+            width: 28px;
+            height: 28px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 28px;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .tip-item p {
+            color: #d1d5db;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        /* Audio Player */
+        .audio-player {
+            background: #1a1a1a;
+            border: 1px solid #2a2a2a;
+            border-radius: 12px;
+            padding: 25px;
+        }
+
+        .audio-player audio {
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 8px;
+        }
+
+        .audio-info {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .audio-info .icon {
+            font-size: 40px;
+        }
+
+        .audio-info .details h4 {
+            color: #f0f0f0;
+            font-size: 16px;
+            margin-bottom: 5px;
+        }
+
+        .audio-info .details p {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #2a2a2a;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #3a3a3a;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #64748b;
+        }
+
+        .empty-state .icon {
+            font-size: 64px;
+            margin-bottom: 20px;
+            opacity: 0.3;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+        }
+
+        /* Question Analyzer Styles */
+        .question-item {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid #334155;
+            border-left: 4px solid #60a5fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 15px;
+            transition: all 0.3s ease;
+        }
+
+        .question-item:hover {
+            border-left-color: #3b82f6;
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(96, 165, 250, 0.2);
+        }
+
+        .question-number {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            text-align: center;
+            line-height: 32px;
+            font-weight: 700;
+            font-size: 14px;
+            margin-right: 12px;
+        }
+
+        .question-text {
+            color: #f1f5f9;
+            font-size: 15px;
+            line-height: 1.7;
+            display: inline;
+        }
+
+        .keyword-tag {
+            display: inline-block;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+            color: white;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .keyword-tag:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+        }
+
+        .keyword-count {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 8px;
+            border-radius: 10px;
+            margin-left: 6px;
+            font-size: 11px;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .content {
+                padding: 30px 20px;
+            }
+
+            .tips-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: 60px;
+                flex-direction: row;
+                justify-content: space-around;
+                padding: 10px;
+                position: fixed;
+                bottom: 0;
+                top: auto;
+                border-right: none;
+                border-top: 1px solid #2a2a2a;
+            }
+
+            .logo {
+                display: none;
+            }
+
+            .nav-icon {
+                margin-bottom: 0;
+            }
+
+            .main-content {
+                margin-left: 0;
+                margin-bottom: 60px;
+                width: 100%;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .page-header h2 {
+                font-size: 24px;
+            }
+
+            .topbar {
+                padding: 0 15px;
+            }
+
+            .topbar h1 {
+                font-size: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <div class="logo">🎓</div>
+            <div class="nav-icon active" onclick="switchPage(0)" title="Dashboard">📊</div>
+            <div class="nav-icon" onclick="switchPage(1)" title="Smart Notes">📝</div>
+            <div class="nav-icon" onclick="switchPage(2)" title="Question Analyzer">🔍</div>
+            <div class="nav-icon" onclick="switchPage(3)" title="Focus & Wellness">🧘</div>
+            <div class="nav-icon" onclick="switchPage(4)" title="Settings">⚙️</div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <div class="topbar">
+                <h1>ExamZen - Student Assistant</h1>
+            </div>
+
+            <div class="content">
+                <!-- Page 1: Exam Prep Dashboard -->
+                <div class="page active" id="page-0">
+                    <div class="page-header">
+                        <h2>Exam Prep Dashboard</h2>
+                        <p>Analyze trends and optimize your study schedule.</p>
+                        <div class="header-actions">
+                            <label style="color: #888; font-size: 14px;">Subject:</label>
+                            <select class="subject-select" id="subject-select" onchange="updateDashboard()">
+                                <option value="physics">Physics</option>
+                                <option value="math">Mathematics</option>
+                                <option value="chemistry">Chemistry</option>
+                                <option value="biology">Biology</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Daily Suggestion -->
+                    <div class="suggestion-card">
+                        <div class="icon">💡</div>
+                        <h3>Daily Study Suggestion</h3>
+                        <div class="suggestion-text" id="daily-suggestion">Focus on Thermodynamics today.</div>
+                        <div class="ai-loading">
+                            <div class="spinner"></div>
+                            Generating AI strategy...
+                        </div>
+                    </div>
+
+                    <!-- Charts Grid -->
+                    <div class="grid-2">
+                        <!-- Topic Frequency Chart -->
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="icon">📈</span>
+                                <h3>Topic Frequency (Last 10 Years)</h3>
+                            </div>
+                            <div class="chart-container" id="frequency-chart"></div>
+                        </div>
+
+                        <!-- Priority Topics Table -->
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="icon">📋</span>
+                                <h3>Priority Topics List</h3>
+                            </div>
+                            <table class="data-table">
+                                <thead>
+                                    <tr>
+                                        <th>Topic Name</th>
+                                        <th>Freq. Score</th>
+                                        <th>Last Seen</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="priority-table"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 2: Smart Notes & OCR -->
+                <div class="page" id="page-1">
+                    <div class="page-header">
+                        <h2>Smart Notes & OCR</h2>
+                        <p>Write, save, and extract notes from images.</p>
+                    </div>
+
+                    <div class="grid-2">
+                        <!-- Notes Editor -->
+                        <div class="card notes-editor">
+                            <div class="card-header">
+                                <span class="icon">✍️</span>
+                                <h3>Write Notes</h3>
+                            </div>
+                            <input type="text" class="note-title-input" id="note-title" placeholder="Note Title (optional)">
+                            <textarea class="notes-textarea" id="notes-input" placeholder="Start typing your notes here..."></textarea>
+                            <div class="btn-group">
+                                <button class="btn" onclick="saveNote()">💾 Save Note</button>
+                                <button class="btn btn-secondary" onclick="clearNote()">🗑️ Clear</button>
+                            </div>
+                        </div>
+
+                        <!-- Photo to Note -->
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="icon">📸</span>
+                                <h3>Photo-to-Note (OCR)</h3>
+                            </div>
+                            <label class="file-upload-area" for="image-upload">
+                                <input type="file" id="image-upload" accept="image/*" onchange="handleImageUpload()">
+                                <div class="icon">📤</div>
+                                <p>Click to upload an image or drag and drop</p>
+                                <p style="font-size: 12px; margin-top: 5px;">PNG, JPG up to 10MB</p>
+                            </label>
+                            <div id="image-preview"></div>
+                            <div id="ocr-result-container" style="display: none;">
+                                <div style="background: #1a1a1a; padding: 15px; border-radius: 10px; margin-top: 15px;">
+                                    <h4 style="color: #f0f0f0; margin-bottom: 10px; font-size: 14px;">Extracted Text:</h4>
+                                    <p id="ocr-result" style="color: #d1d5db; font-size: 14px; line-height: 1.6;"></p>
+                                </div>
+                                <button class="btn" onclick="addOCRToNotes()" style="margin-top: 15px;">➕ Add to Notes</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Revision Mode -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon">🔄</span>
+                            <h3>Revision Mode</h3>
+                        </div>
+                        <button class="btn" onclick="showRandomNote()">🎲 Show Random Note</button>
+                        <div class="revision-display" id="revision-display">
+                            <div class="placeholder">Click the button above to review a random note</div>
+                        </div>
+                    </div>
+
+                    <!-- Saved Notes -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon">📚</span>
+                            <h3>Saved Notes</h3>
+                        </div>
+                        <div class="notes-list" id="notes-list">
+                            <div class="empty-state">
+                                <div class="icon">📝</div>
+                                <p>No notes saved yet. Start writing!</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 3: Smart Question Analyzer -->
+                <div class="page" id="page-2">
+                    <div class="page-header">
+                        <h2>Smart Question Analyzer</h2>
+                        <p>Upload textbook pages or question papers to extract and analyze important questions.</p>
+                    </div>
+
+                    <!-- Upload Section -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon">📤</span>
+                            <h3>Upload Question Paper / Textbook Page</h3>
+                        </div>
+                        
+                        <!-- Demo Mode Toggle -->
+                        <div style="margin-bottom: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; border-left: 3px solid #f59e0b;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" id="demo-mode-toggle" style="width: 18px; height: 18px; cursor: pointer;">
+                                <span style="color: #f59e0b; font-weight: 600; font-size: 14px;">🧪 Demo Mode (Use sample data instead of real OCR)</span>
+                            </label>
+                            <p style="color: #64748b; font-size: 12px; margin-top: 8px; margin-left: 28px;">
+                                Enable this to test the analyzer with sample textbook content without uploading an image.
+                            </p>
+                        </div>
+
+                        <label class="file-upload-area" id="upload-area-label" for="analyzer-image-upload">
+                            <input type="file" id="analyzer-image-upload" accept="image/jpeg,image/jpg,image/png" onchange="analyzeQuestionImage()">
+                            <div class="icon">📸</div>
+                            <p><strong>Click to upload or drag and drop</strong></p>
+                            <p style="font-size: 12px; margin-top: 5px;">JPG, PNG - Clear images work best</p>
+                        </label>
+                        <div id="analyzer-image-preview"></div>
+                        
+                        <!-- Clear/Reset Button -->
+                        <div id="analyzer-actions" style="display: none; margin-top: 15px;">
+                            <button class="btn btn-secondary" onclick="clearAnalyzer()">🗑️ Clear & Upload New Image</button>
+                        </div>
+                    </div>
+
+                    <!-- Processing Status -->
+                    <div id="processing-status" style="display: none;">
+                        <div class="card" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid #334155;">
+                            <div style="text-align: center; padding: 20px;">
+                                <div class="ai-loading" style="justify-content: center; font-size: 16px;">
+                                    <div class="spinner"></div>
+                                    Processing image and extracting questions...
+                                </div>
+                                <p style="color: #64748b; font-size: 13px; margin-top: 10px;">This may take a few seconds</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Extracted Questions -->
+                    <div id="questions-section" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="icon">❓</span>
+                                <h3>Suggested Important Questions</h3>
+                            </div>
+                            <div id="extracted-questions-list"></div>
+                        </div>
+                    </div>
+
+                    <!-- Key Topics -->
+                    <div id="keywords-section" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="icon">🏷️</span>
+                                <h3>Key Topics Identified</h3>
+                            </div>
+                            <div id="keywords-container" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;"></div>
+                        </div>
+                    </div>
+
+                    <!-- Full Extracted Text -->
+                    <div id="full-text-section" style="display: none;">
+                        <div class="card">
+                            <div class="card-header">
+                                <span class="icon">📄</span>
+                                <h3>Full Extracted Text</h3>
+                            </div>
+                            <div style="background: #1a1a1a; padding: 20px; border-radius: 10px; max-height: 400px; overflow-y: auto;">
+                                <pre id="full-extracted-text" style="color: #e0e0e0; font-size: 13px; line-height: 1.6; white-space: pre-wrap; font-family: 'Courier New', monospace;"></pre>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Error Message -->
+                    <div id="error-section" style="display: none;">
+                        <div class="card" style="border: 1px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
+                            <div style="display: flex; align-items: start; gap: 15px;">
+                                <div style="font-size: 32px;">⚠️</div>
+                                <div>
+                                    <h3 style="color: #ef4444; margin-bottom: 10px;">Error Processing Image</h3>
+                                    <p id="error-message" style="color: #e0e0e0; font-size: 14px; line-height: 1.6;"></p>
+                                    <div style="margin-top: 15px; padding: 15px; background: #1a1a1a; border-radius: 8px;">
+                                        <p style="color: #94a3b8; font-size: 13px; margin-bottom: 8px;"><strong>Tips for better results:</strong></p>
+                                        <ul style="color: #64748b; font-size: 12px; line-height: 1.8; padding-left: 20px;">
+                                            <li>Use a clear, well-lit image</li>
+                                            <li>Avoid blurry or low-resolution images</li>
+                                            <li>Make sure text is readable and not skewed</li>
+                                            <li>Try a different image format (JPG or PNG)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Page 4: Focus & Wellness -->
+                <div class="page" id="page-3">
+                    <div class="page-header">
+                        <h2>Focus & Wellness Zone</h2>
+                        <p>Reduce exam stress and improve concentration.</p>
+                    </div>
+
+                    <!-- Random Tip -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon">💪</span>
+                            <h3>Exam Fear Tips</h3>
+                        </div>
+                        <button class="btn" onclick="showRandomTip()">🎯 Get Random Tip</button>
+                        <div class="tip-card" id="random-tip" style="display: none;">
+                            <div class="icon">💡</div>
+                            <p id="tip-content"></p>
+                        </div>
+                    </div>
+
+                    <!-- Focus Music -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon">🎵</span>
+                            <h3>Focus Music - Alpha Waves</h3>
+                        </div>
+                        <div class="audio-player">
+                            <div class="audio-info">
+                                <div class="icon">🎧</div>
+                                <div class="details">
+                                    <h4>Concentration Boost - Alpha Waves</h4>
+                                    <p>Select your preferred focus music below</p>
+                                </div>
+                            </div>
+                            
+                            <!-- Music Selector -->
+                            <div style="margin-bottom: 20px;">
+                                <label style="color: #888; font-size: 14px; display: block; margin-bottom: 10px;">Choose Music:</label>
+                                <select class="subject-select" id="music-select" onchange="changeMusic()" style="width: 100%;">
+                                    <option value="0">🧘 Alpha Waves - Deep Focus (10 Hz)</option>
+                                    <option value="1">🎹 Study Music - Lofi Beats</option>
+                                    <option value="2">🌊 Ocean Waves - Nature Sounds</option>
+                                    <option value="3">☁️ Ambient Relaxation - Calm</option>
+                                    <option value="4">🎼 Classical Music - Mozart</option>
+                                    <option value="5">🌲 Forest Rain - Meditation</option>
+                                    <option value="6">⚡ Binaural Beats - Theta Waves</option>
+                                    <option value="7">🌙 Night Jazz - Soft Piano</option>
+                                </select>
+                            </div>
+
+                            <!-- YouTube Player Container -->
+                            <div id="youtube-player-container" style="position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; border-radius: 12px; margin-bottom: 20px;">
+                                <iframe id="youtube-player" 
+                                    style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 12px;"
+                                    src="https://www.youtube.com/embed/WPni755-Krg?autoplay=0&loop=1&playlist=WPni755-Krg"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowfullscreen>
+                                </iframe>
+                            </div>
+                            
+                            <div style="margin-top: 20px; padding: 15px; background: #1a1a1a; border-radius: 10px; border-left: 3px solid #34d399;">
+                                <p style="color: #e0e0e0; font-size: 13px; margin-bottom: 8px;">🎧 <strong>Pro Tips:</strong></p>
+                                <p style="color: #64748b; font-size: 12px; line-height: 1.6;">
+                                    • Best with headphones for optimal focus effect<br>
+                                    • Keep volume at 30-50% while studying<br>
+                                    • Alpha waves (8-14 Hz) enhance concentration<br>
+                                    • Take 5-min breaks every 25 minutes (Pomodoro)<br>
+                                    • Click play button on the video to start
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- All Tips -->
+                    <div class="card">
+                        <div class="card-header">
+                            <span class="icon">🌟</span>
+                            <h3>All Wellness Tips</h3>
+                        </div>
+                        <div class="tips-grid" id="all-tips"></div>
+                    </div>
+                </div>
+
+                <!-- Page 5: Settings -->
+                <div class="page" id="page-4">
+                    <div class="page-header">
+                        <h2>Settings</h2>
+                        <p>Customize your experience.</p>
+                    </div>
+                    <div class="empty-state">
+                        <div class="icon">⚙️</div>
+                        <p>Settings panel coming soon!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data
+        const topicsData = {
+            physics: [
+                { topic: 'Thermodynamics', frequency: 92, year: 2023 },
+                { topic: 'Electromagnetism', frequency: 88, year: 2022 },
+                { topic: 'Quantum Mechanics', frequency: 75, year: 2021 },
+                { topic: 'Optics', frequency: 60, year: 2020 },
+                { topic: 'Kinematics', frequency: 45, year: 2019 }
+            ],
+            math: [
+                { topic: 'Calculus & Derivatives', frequency: 95, year: 2023 },
+                { topic: 'Probability & Statistics', frequency: 89, year: 2022 },
+                { topic: 'Coordinate Geometry', frequency: 82, year: 2021 },
+                { topic: 'Trigonometry', frequency: 71, year: 2020 },
+                { topic: 'Algebra', frequency: 58, year: 2019 }
+            ],
+            chemistry: [
+                { topic: 'Organic Chemistry', frequency: 94, year: 2023 },
+                { topic: 'Chemical Bonding', frequency: 87, year: 2022 },
+                { topic: 'Electrochemistry', frequency: 79, year: 2021 },
+                { topic: 'Thermochemistry', frequency: 68, year: 2020 },
+                { topic: 'Chemical Kinetics', frequency: 55, year: 2019 }
+            ],
+            biology: [
+                { topic: 'Genetics & Evolution', frequency: 91, year: 2023 },
+                { topic: 'Cell Biology', frequency: 85, year: 2022 },
+                { topic: 'Human Physiology', frequency: 77, year: 2021 },
+                { topic: 'Plant Physiology', frequency: 64, year: 2020 },
+                { topic: 'Ecology', frequency: 52, year: 2019 }
+            ]
+        };
+
+        const examTips = [
+            "Take deep breaths: 4 seconds in, hold for 4 seconds, breathe out for 6 seconds. Reduces anxiety instantly.",
+            "Study in 25-minute focused sessions (Pomodoro). Your brain retains more with regular breaks.",
+            "Sleep 7-8 hours before exams. Memory consolidation happens during sleep - don't sacrifice it!",
+            "Rewrite notes by hand. The physical act of writing activates more brain regions than typing.",
+            "Teach concepts to someone else. If you can explain it simply, you truly understand it.",
+            "Stay hydrated throughout the day. Even 2% dehydration can significantly impair cognitive performance.",
+            "Exercise for 20 minutes before studying. Physical activity increases blood flow to the brain.",
+            "Use mnemonics and memory palaces. Transform abstract information into vivid mental images.",
+            "Practice past exam papers under timed conditions. This simulates real exam pressure and builds confidence.",
+            "Eat brain-boosting foods: nuts, berries, dark chocolate, and omega-3 rich fish.",
+            "Avoid cramming the night before. Review your summary notes instead of learning new material.",
+            "Visualize success before the exam. Mental rehearsal significantly reduces performance anxiety.",
+            "Create a dedicated study space free from distractions. Your environment profoundly affects focus.",
+            "Use active recall techniques. Quiz yourself regularly instead of passively re-reading notes.",
+            "Take care of your mental health. It's completely okay to ask for help when feeling stressed."
+        ];
+
+        let notes = JSON.parse(localStorage.getItem('examNotes')) || [];
+        let currentOCRText = '';
+
+        // Initialize
+        window.addEventListener('DOMContentLoaded', () => {
+            updateDashboard();
+            displayNotes();
+            displayAllTips();
+            
+            // Add demo mode toggle handler
+            document.getElementById('demo-mode-toggle').addEventListener('change', function() {
+                const hasUploadedImage = document.getElementById('analyzer-image-preview').innerHTML !== '';
+                
+                if (this.checked) {
+                    // Demo mode enabled
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #f59e0b; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                    notification.textContent = '🧪 Demo Mode Enabled - Sample data will be used';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 3000);
+                } else {
+                    // Demo mode disabled
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #2563eb; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                    notification.textContent = '📸 Real OCR Mode - Upload images for analysis';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 3000);
+                }
+            });
+        });
+
+        // Page Navigation
+        function switchPage(index) {
+            console.log('Switching to page:', index);
+            const pages = document.querySelectorAll('.page');
+            const navIcons = document.querySelectorAll('.nav-icon');
+
+            console.log('Total pages found:', pages.length);
+            console.log('Total nav icons found:', navIcons.length);
+
+            pages.forEach(p => p.classList.remove('active'));
+            navIcons.forEach(n => n.classList.remove('active'));
+
+            pages[index].classList.add('active');
+            navIcons[index].classList.add('active');
+            
+            console.log('Page switched to:', pages[index].id);
+        }
+
+        // Dashboard Functions
+        function updateDashboard() {
+            const subject = document.getElementById('subject-select').value;
+            const data = topicsData[subject];
+
+            // Update suggestion
+            const topTopic = data[0];
+            document.getElementById('daily-suggestion').textContent = `Focus on ${topTopic.topic} today.`;
+
+            // Update frequency chart
+            const chartContainer = document.getElementById('frequency-chart');
+            chartContainer.innerHTML = '';
+            data.forEach((item, index) => {
+                const isHighlight = index === 0;
+                chartContainer.innerHTML += `
+                    <div class="chart-bar">
+                        <div class="chart-bar-label">
+                            <span class="name">${item.topic}</span>
+                            <span class="value">${item.frequency}%</span>
+                        </div>
+                        <div class="chart-bar-track">
+                            <div class="chart-bar-fill ${isHighlight ? 'highlight' : ''}" style="width: 0%"></div>
+                        </div>
+                    </div>
+                `;
+            });
+
+            // Animate bars
+            setTimeout(() => {
+                const fills = chartContainer.querySelectorAll('.chart-bar-fill');
+                fills.forEach((fill, index) => {
+                    fill.style.width = data[index].frequency + '%';
+                });
+            }, 100);
+
+            // Update priority table
+            const tableBody = document.getElementById('priority-table');
+            tableBody.innerHTML = '';
+            data.forEach((item, index) => {
+                const priority = index === 0 ? 'high' : index < 3 ? 'medium' : 'low';
+                tableBody.innerHTML += `
+                    <tr>
+                        <td>
+                            <span class="priority-badge priority-${priority}">●</span>
+                            ${item.topic}
+                        </td>
+                        <td><strong>${item.frequency}</strong></td>
+                        <td><span class="year-badge">${item.year}</span></td>
+                    </tr>
+                `;
+            });
+        }
+
+        // Notes Functions
+        function saveNote() {
+            const noteText = document.getElementById('notes-input').value.trim();
+            const noteTitle = document.getElementById('note-title').value.trim();
+            
+            if (!noteText) {
+                alert('Please write something before saving!');
+                return;
+            }
+
+            // Check if editing existing note
+            if (window.currentEditingNoteId) {
+                // Update existing note
+                const noteIndex = notes.findIndex(n => n.id === window.currentEditingNoteId);
+                if (noteIndex !== -1) {
+                    notes[noteIndex].title = noteTitle || 'Untitled Note';
+                    notes[noteIndex].content = noteText;
+                    notes[noteIndex].date = new Date().toLocaleString() + ' (edited)';
+                    
+                    localStorage.setItem('examNotes', JSON.stringify(notes));
+                    
+                    // Reset editing state
+                    cancelEdit();
+                    displayNotes();
+                    
+                    // Show success message
+                    const notification = document.createElement('div');
+                    notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #10b981; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                    notification.textContent = '✅ Note updated successfully!';
+                    document.body.appendChild(notification);
+                    setTimeout(() => notification.remove(), 2000);
+                    return;
+                }
+            }
+
+            // Create new note
+            const note = {
+                id: Date.now(),
+                title: noteTitle || 'Untitled Note',
+                content: noteText,
+                date: new Date().toLocaleString()
+            };
+
+            notes.push(note);
+            localStorage.setItem('examNotes', JSON.stringify(notes));
+            document.getElementById('notes-input').value = '';
+            document.getElementById('note-title').value = '';
+            displayNotes();
+            
+            // Show success message
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #10b981; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            notification.textContent = '✅ Note saved successfully!';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+        }
+
+        function clearNote() {
+            if (window.currentEditingNoteId) {
+                cancelEdit();
+            }
+            document.getElementById('notes-input').value = '';
+            document.getElementById('note-title').value = '';
+        }
+
+        function deleteNote(noteId) {
+            console.log('Deleting note with ID:', noteId);
+            if (confirm('⚠️ Are you sure you want to delete this note?\n\nThis action cannot be undone.')) {
+                notes = notes.filter(note => note.id !== noteId);
+                localStorage.setItem('examNotes', JSON.stringify(notes));
+                displayNotes();
+                
+                // Show success message
+                const tempAlert = document.createElement('div');
+                tempAlert.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #10b981; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+                tempAlert.textContent = '✅ Note deleted successfully!';
+                document.body.appendChild(tempAlert);
+                setTimeout(() => tempAlert.remove(), 2000);
+            }
+        }
+
+        function displayNotes() {
+            const container = document.getElementById('notes-list');
+
+            if (notes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="icon">📝</div>
+                        <p>No notes saved yet. Start writing!</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = notes.map(note => `
+                <div class="note-item" data-note-id="${note.id}">
+                    <div class="note-actions">
+                        <button class="edit-note-btn" data-note-id="${note.id}" type="button">✏️ Edit</button>
+                        <button class="delete-note-btn" data-note-id="${note.id}" type="button">🗑️ Delete</button>
+                    </div>
+                    ${note.title ? `<div class="note-title">${escapeHtml(note.title)}</div>` : ''}
+                    <div class="note-header">
+                        <span class="note-date">📅 ${note.date}</span>
+                    </div>
+                    <div class="note-content">${escapeHtml(note.content)}</div>
+                </div>
+            `).reverse().join('');
+
+            // Add event listeners to edit buttons
+            container.querySelectorAll('.edit-note-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const noteId = parseInt(this.getAttribute('data-note-id'));
+                    openNoteForEditing(noteId);
+                });
+            });
+
+            // Add event listeners to delete buttons
+            container.querySelectorAll('.delete-note-btn').forEach(btn => {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const noteId = parseInt(this.getAttribute('data-note-id'));
+                    deleteNote(noteId);
+                });
+            });
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        function openNoteForEditing(noteId) {
+            const note = notes.find(n => n.id === noteId);
+            if (!note) return;
+
+            // Store the note ID being edited
+            window.currentEditingNoteId = noteId;
+
+            // Fill the editor with note data
+            document.getElementById('note-title').value = note.title || '';
+            document.getElementById('notes-input').value = note.content;
+
+            // Scroll to editor
+            document.querySelector('.notes-editor').scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+            // Update save button to show "Update"
+            const saveBtn = document.querySelector('.btn[onclick="saveNote()"]');
+            saveBtn.innerHTML = '✏️ Update Note';
+            saveBtn.style.background = '#f59e0b';
+
+            // Show cancel button
+            const btnGroup = document.querySelector('.btn-group');
+            if (!document.getElementById('cancel-edit-btn')) {
+                const cancelBtn = document.createElement('button');
+                cancelBtn.id = 'cancel-edit-btn';
+                cancelBtn.className = 'btn btn-secondary';
+                cancelBtn.innerHTML = '✖️ Cancel Edit';
+                cancelBtn.onclick = cancelEdit;
+                btnGroup.insertBefore(cancelBtn, btnGroup.children[1]);
+            }
+
+            // Highlight the editing note
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.style.border = '1px solid #2a2a2a';
+            });
+            document.querySelector(`.note-item[data-note-id="${noteId}"]`).style.border = '2px solid #f59e0b';
+
+            // Show notification
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #f59e0b; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            notification.textContent = '✏️ Editing note - Click Update to save changes';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        function cancelEdit() {
+            window.currentEditingNoteId = null;
+            document.getElementById('note-title').value = '';
+            document.getElementById('notes-input').value = '';
+            
+            // Reset save button
+            const saveBtn = document.querySelector('.btn[onclick="saveNote()"]');
+            saveBtn.innerHTML = '💾 Save Note';
+            saveBtn.style.background = '#2563eb';
+
+            // Remove cancel button
+            const cancelBtn = document.getElementById('cancel-edit-btn');
+            if (cancelBtn) cancelBtn.remove();
+
+            // Remove highlighting
+            document.querySelectorAll('.note-item').forEach(item => {
+                item.style.border = '1px solid #2a2a2a';
+            });
+        }
+
+        function showRandomNote() {
+            const display = document.getElementById('revision-display');
+
+            if (notes.length === 0) {
+                display.classList.remove('active');
+                display.innerHTML = '<div class="placeholder">No notes available. Save some notes first!</div>';
+                return;
+            }
+
+            const randomNote = notes[Math.floor(Math.random() * notes.length)];
+            display.classList.add('active');
+            display.innerHTML = `
+                <div class="content">
+                    ${randomNote.title ? `<div style="color: #60a5fa; font-size: 18px; font-weight: 600; margin-bottom: 10px;">${randomNote.title}</div>` : ''}
+                    <div style="color: #64748b; font-size: 13px; margin-bottom: 15px;">📅 ${randomNote.date}</div>
+                    <div style="color: #f0f0f0; font-size: 15px; line-height: 1.7;">${randomNote.content}</div>
+                </div>
+            `;
+        }
+
+        // OCR Functions
+        function handleImageUpload() {
+            const input = document.getElementById('image-upload');
+            const file = input.files[0];
+            if (!file) return;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('image-preview');
+                preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Uploaded">`;
+
+                // Simulate OCR
+                setTimeout(() => {
+                    const ocrText = `This is a simulated OCR extraction.\n\nIn production, integrate:\n• Tesseract.js for browser-based OCR\n• Google Cloud Vision API\n• Microsoft Azure Computer Vision\n\nExtracted content:\n- Mathematical formulas\n- Key definitions\n- Important concepts\n\nThis text can be added to your notes.`;
+
+                    currentOCRText = ocrText;
+                    document.getElementById('ocr-result').textContent = ocrText;
+                    document.getElementById('ocr-result-container').style.display = 'block';
+                }, 1500);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function addOCRToNotes() {
+            if (!currentOCRText) return;
+            document.getElementById('notes-input').value = currentOCRText;
+            switchPage(1);
+            alert('✅ Extracted text added to note editor!');
+        }
+
+        // Tips Functions
+        function showRandomTip() {
+            const randomTip = examTips[Math.floor(Math.random() * examTips.length)];
+            const tipCard = document.getElementById('random-tip');
+            document.getElementById('tip-content').textContent = randomTip;
+            tipCard.style.display = 'block';
+        }
+
+        function displayAllTips() {
+            const container = document.getElementById('all-tips');
+            container.innerHTML = examTips.map((tip, index) => `
+                <div class="tip-item">
+                    <div class="number">${index + 1}</div>
+                    <p>${tip}</p>
+                </div>
+            `).join('');
+        }
+
+        // Music Player Functions
+        const musicTracks = [
+            {
+                name: '🧘 Alpha Waves - Deep Focus (10 Hz)',
+                videoId: 'WPni755-Krg'  // Alpha Waves for Studying
+            },
+            {
+                name: '🎹 Study Music - Lofi Beats',
+                videoId: 'jfKfPfyJRdk'  // Lofi Hip Hop Study Music
+            },
+            {
+                name: '🌊 Ocean Waves - Nature Sounds',
+                videoId: 'bn9F19Hi1Lk'  // Ocean Waves Sounds
+            },
+            {
+                name: '☁️ Ambient Relaxation - Calm',
+                videoId: 'lTRiuFIWV54'  // Ambient Study Music
+            },
+            {
+                name: '🎼 Classical Music - Mozart',
+                videoId: 'Rb0UmrCXxVA'  // Classical Music for Studying
+            },
+            {
+                name: '🌲 Forest Rain - Meditation',
+                videoId: 'nDq6TstdEi8'  // Rain and Forest Sounds
+            },
+            {
+                name: '⚡ Binaural Beats - Theta Waves',
+                videoId: 'cLoytewvn0g'  // Theta Waves Meditation
+            },
+            {
+                name: '🌙 Night Jazz - Soft Piano',
+                videoId: 'Dx5qFachd3A'  // Relaxing Jazz Piano
+            }
+        ];
+
+        function changeMusic() {
+            const select = document.getElementById('music-select');
+            const trackIndex = parseInt(select.value);
+            const track = musicTracks[trackIndex];
+            
+            // Update YouTube iframe
+            const iframe = document.getElementById('youtube-player');
+            iframe.src = `https://www.youtube.com/embed/${track.videoId}?autoplay=0&loop=1&playlist=${track.videoId}`;
+            
+            // Show notification
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #2563eb; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            notification.textContent = `🎵 Changed to: ${track.name}`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 3000);
+        }
+
+        // Smart Question Analyzer Functions
+        const stopWords = new Set([
+            'the', 'is', 'at', 'which', 'on', 'a', 'an', 'and', 'or', 'but', 'in', 'with',
+            'to', 'for', 'of', 'as', 'by', 'that', 'this', 'it', 'from', 'be', 'are', 'was',
+            'were', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'should',
+            'could', 'may', 'might', 'can', 'shall', 'their', 'them', 'they', 'these', 'those',
+            'am', 'if', 'when', 'where', 'who', 'how', 'why', 'what', 'about', 'into', 'through',
+            'during', 'before', 'after', 'above', 'below', 'up', 'down', 'out', 'off', 'over',
+            'under', 'again', 'further', 'then', 'once', 'here', 'there', 'all', 'both', 'each',
+            'few', 'more', 'most', 'other', 'some', 'such', 'no', 'nor', 'not', 'only', 'own',
+            'same', 'so', 'than', 'too', 'very', 's', 't', 'just', 'don', 'now', 'also'
+        ]);
+
+        const questionStarters = ['define', 'explain', 'what', 'why', 'how', 'when', 'where', 'who', 
+                                 'describe', 'discuss', 'compare', 'contrast', 'analyze', 'evaluate',
+                                 'list', 'identify', 'state', 'name', 'give', 'write', 'calculate',
+                                 'prove', 'derive', 'solve', 'find', 'determine', 'show'];
+
+        function analyzeQuestionImage() {
+            const input = document.getElementById('analyzer-image-upload');
+            const file = input.files[0];
+            
+            if (!file) return;
+
+            // Validate file type
+            if (!file.type.match('image/(jpeg|jpg|png)')) {
+                showError('Please upload a valid image file (JPG or PNG)');
+                return;
+            }
+
+            // Validate file size (max 10MB)
+            if (file.size > 10 * 1024 * 1024) {
+                showError('File size too large. Please upload an image smaller than 10MB.');
+                return;
+            }
+
+            // Hide previous results and errors
+            hideAllSections();
+
+            // Show image preview
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('analyzer-image-preview');
+                preview.innerHTML = `<img src="${e.target.result}" class="preview-image" alt="Uploaded question paper">`;
+                
+                // Show action buttons
+                document.getElementById('analyzer-actions').style.display = 'block';
+                
+                // Show processing status
+                document.getElementById('processing-status').style.display = 'block';
+
+                // Perform OCR processing
+                setTimeout(() => {
+                    performOCRAnalysis(e.target.result);
+                }, 2000);
+            };
+            
+            reader.readAsDataURL(file);
+        }
+
+        function performOCRAnalysis(imageData) {
+            // Check if demo mode is enabled
+            const demoMode = document.getElementById('demo-mode-toggle').checked;
+            
+            if (demoMode) {
+                // Use simulated data for demo
+                const simulatedText = `
+CHAPTER 5: THERMODYNAMICS
+
+Q1. Define the first law of thermodynamics.
+The first law of thermodynamics states that energy cannot be created or destroyed, only transformed from one form to another.
+
+Q2. Explain the concept of entropy and its significance in thermodynamics.
+
+Q3. What is the difference between isothermal and adiabatic processes?
+
+Important Concepts:
+- Heat transfer occurs through conduction, convection, and radiation
+- Internal energy depends on temperature and molecular motion
+- The Carnot cycle represents the most efficient heat engine possible
+
+Q4. How does the second law of thermodynamics relate to the direction of heat flow?
+
+Q5. Calculate the efficiency of a Carnot engine operating between 400K and 300K.
+
+Exercise Problems:
+1. Derive the relationship between pressure and volume in an adiabatic process.
+2. Prove that entropy always increases in an isolated system.
+3. Why is it impossible to build a perpetual motion machine?
+
+Additional Questions:
+- Describe the working principle of a refrigerator.
+- Compare reversible and irreversible processes.
+- Discuss the concept of thermal equilibrium.
+                `.trim();
+                
+                setTimeout(() => {
+                    try {
+                        const analysis = analyzeText(simulatedText);
+                        displayResults(analysis, simulatedText);
+                    } catch (error) {
+                        showError('An error occurred while analyzing the text.');
+                        console.error('Analysis error:', error);
+                    }
+                }, 1500);
+                return;
+            }
+            
+            // Use Google Cloud Vision API for real OCR
+            const apiKey = 'AIzaSyDKrH7mBS_J5FxGE8YbR_q9W6WFflehxrg';
+            
+            // Convert base64 to the format needed for API
+            const base64Image = imageData.split(',')[1];
+            
+            // Call Google Cloud Vision API
+            fetch(`https://vision.googleapis.com/v1/images:annotate?key=${apiKey}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    requests: [
+                        {
+                            image: {
+                                content: base64Image
+                            },
+                            features: [
+                                {
+                                    type: 'TEXT_DETECTION',
+                                    maxResults: 1
+                                }
+                            ]
+                        }
+                    ]
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Vision API Response:', data);
+                
+                // Check for errors
+                if (data.responses && data.responses[0].error) {
+                    throw new Error(data.responses[0].error.message);
+                }
+                
+                // Extract text
+                const extractedText = data.responses && 
+                                     data.responses[0] && 
+                                     data.responses[0].textAnnotations && 
+                                     data.responses[0].textAnnotations[0] ? 
+                                     data.responses[0].textAnnotations[0].description : '';
+                
+                // Check if text extraction was successful
+                if (!extractedText || extractedText.trim().length < 10) {
+                    showError('No text could be extracted from the image. The image might be too blurry or the text is not readable. Please try uploading a clearer image.');
+                    return;
+                }
+                
+                // Analyze the extracted text
+                try {
+                    const analysis = analyzeText(extractedText);
+                    displayResults(analysis, extractedText);
+                } catch (error) {
+                    showError('An error occurred while analyzing the text. Please try again with a different image.');
+                    console.error('Analysis error:', error);
+                }
+            })
+            .catch(error => {
+                console.error('OCR Error:', error);
+                showError(`OCR processing failed: ${error.message}. Please try again with a different image or enable Demo Mode to test the analyzer.`);
+            });
+        }
+
+        function analyzeText(text) {
+            // Extract questions
+            const questions = extractQuestions(text);
+            
+            // Find keywords
+            const keywords = findKeywords(text);
+            
+            return { questions, keywords };
+        }
+
+        function extractQuestions(text) {
+            const questions = [];
+            const lines = text.split('\n');
+            
+            for (let line of lines) {
+                line = line.trim();
+                if (!line) continue;
+                
+                // Check if line ends with question mark
+                if (line.endsWith('?')) {
+                    questions.push(line);
+                    continue;
+                }
+                
+                // Check if line starts with question starter
+                const firstWord = line.split(/\s+/)[0].toLowerCase().replace(/[^a-z]/g, '');
+                if (questionStarters.includes(firstWord)) {
+                    questions.push(line);
+                }
+                
+                // Check for numbered questions (Q1, Q2, etc.)
+                if (/^Q\d+[\.\:\)]\s*/i.test(line)) {
+                    questions.push(line);
+                }
+            }
+            
+            return questions;
+        }
+
+        function findKeywords(text) {
+            // Convert to lowercase and remove punctuation
+            const cleanText = text.toLowerCase().replace(/[^\w\s]/g, ' ');
+            
+            // Split into words
+            const words = cleanText.split(/\s+/);
+            
+            // Count word frequency
+            const wordCount = {};
+            for (let word of words) {
+                word = word.trim();
+                
+                // Skip if empty, too short, or is a stop word
+                if (!word || word.length < 4 || stopWords.has(word)) continue;
+                
+                // Skip numbers
+                if (/^\d+$/.test(word)) continue;
+                
+                wordCount[word] = (wordCount[word] || 0) + 1;
+            }
+            
+            // Convert to array and sort by frequency
+            const keywords = Object.entries(wordCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 15)  // Top 15 keywords
+                .map(([word, count]) => ({ word, count }));
+            
+            return keywords;
+        }
+
+        function displayResults(analysis, fullText) {
+            // Hide processing
+            document.getElementById('processing-status').style.display = 'none';
+            
+            // Display questions
+            if (analysis.questions.length > 0) {
+                const questionsContainer = document.getElementById('extracted-questions-list');
+                questionsContainer.innerHTML = analysis.questions.map((q, index) => `
+                    <div class="question-item">
+                        <span class="question-number">${index + 1}</span>
+                        <span class="question-text">${escapeHtml(q)}</span>
+                    </div>
+                `).join('');
+                document.getElementById('questions-section').style.display = 'block';
+            } else {
+                // No questions found
+                const questionsContainer = document.getElementById('extracted-questions-list');
+                questionsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #64748b;">
+                        <div style="font-size: 48px; margin-bottom: 15px;">❓</div>
+                        <p>No questions detected in the extracted text.</p>
+                        <p style="font-size: 13px; margin-top: 8px;">Try uploading an image with clear question text.</p>
+                    </div>
+                `;
+                document.getElementById('questions-section').style.display = 'block';
+            }
+            
+            // Display keywords
+            if (analysis.keywords.length > 0) {
+                const keywordsContainer = document.getElementById('keywords-container');
+                keywordsContainer.innerHTML = analysis.keywords.map(kw => `
+                    <div class="keyword-tag">
+                        ${kw.word}
+                        <span class="keyword-count">${kw.count}</span>
+                    </div>
+                `).join('');
+                document.getElementById('keywords-section').style.display = 'block';
+            }
+            
+            // Display full text
+            document.getElementById('full-extracted-text').textContent = fullText;
+            document.getElementById('full-text-section').style.display = 'block';
+            
+            // Show success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #10b981; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            notification.textContent = `✅ Analyzed successfully! Found ${analysis.questions.length} questions and ${analysis.keywords.length} key topics.`;
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 4000);
+        }
+
+        function showError(message) {
+            hideAllSections();
+            document.getElementById('error-message').textContent = message;
+            document.getElementById('error-section').style.display = 'block';
+        }
+
+        function hideAllSections() {
+            document.getElementById('processing-status').style.display = 'none';
+            document.getElementById('questions-section').style.display = 'none';
+            document.getElementById('keywords-section').style.display = 'none';
+            document.getElementById('full-text-section').style.display = 'none';
+            document.getElementById('error-section').style.display = 'none';
+        }
+
+        function clearAnalyzer() {
+            // Clear file input
+            document.getElementById('analyzer-image-upload').value = '';
+            
+            // Clear image preview
+            document.getElementById('analyzer-image-preview').innerHTML = '';
+            
+            // Hide all result sections
+            hideAllSections();
+            
+            // Hide action buttons
+            document.getElementById('analyzer-actions').style.display = 'none';
+            
+            // Show notification
+            const notification = document.createElement('div');
+            notification.style.cssText = 'position: fixed; top: 80px; right: 30px; background: #10b981; color: white; padding: 15px 25px; border-radius: 10px; font-weight: 600; z-index: 9999; box-shadow: 0 4px 12px rgba(0,0,0,0.3);';
+            notification.textContent = '✅ Analyzer cleared! Ready for new upload.';
+            document.body.appendChild(notification);
+            setTimeout(() => notification.remove(), 2000);
+        }
+    </script>
+</body>
+</html>
